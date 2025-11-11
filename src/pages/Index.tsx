@@ -112,7 +112,6 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-2">
             <ConnectionStatus isConnected={isConnected} />
-            <ThemeToggle />
             <Link to="/analytics">
               <Button variant="outline" size="sm" className="gap-2">
                 <BarChart3 className="h-4 w-4" />
