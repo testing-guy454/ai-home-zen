@@ -10,12 +10,12 @@ interface ChartCardProps {
 
 export const ChartCard = ({ title, data, color, unit }: ChartCardProps) => {
   return (
-    <Card className="border-border/50 shadow-lg">
+    <Card className="border-border/50">
       <CardHeader>
-        <CardTitle className="text-lg">{title}</CardTitle>
+        <CardTitle className="text-base text-muted-foreground/80">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={220}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis
@@ -34,16 +34,19 @@ export const ChartCard = ({ title, data, color, unit }: ChartCardProps) => {
               contentStyle={{
                 backgroundColor: 'hsl(var(--card))',
                 border: '1px solid hsl(var(--border))',
-                borderRadius: '8px',
+                borderRadius: '10px',
+                boxShadow: '0 8px 24px hsl(0 0% 0% / 0.2)'
               }}
+              labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+              itemStyle={{ color: 'hsl(var(--foreground))' }}
             />
             <Line
               type="monotone"
               dataKey="value"
               stroke={color}
-              strokeWidth={2}
+              strokeWidth={2.5}
               dot={false}
-              animationDuration={300}
+              animationDuration={400}
             />
           </LineChart>
         </ResponsiveContainer>
