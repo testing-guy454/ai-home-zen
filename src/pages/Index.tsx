@@ -136,13 +136,21 @@ const Index = () => {
         </div>
 
         {/* Controls */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <ControlCard
             title="Bulb Control"
             icon={Lightbulb}
             type="toggle"
             value={sensorData.bulbState === 'ON'}
             onToggle={(state) => controlBulb(state ? 'ON' : 'OFF')}
+            disabled={!isConnected}
+          />
+          <ControlCard
+            title="Fan Control"
+            icon={Fan}
+            type="toggle"
+            value={sensorData.fanState === 'ON'}
+            onToggle={(state) => controlFan(state ? 'ON' : 'OFF')}
             disabled={!isConnected}
           />
           <ControlCard
