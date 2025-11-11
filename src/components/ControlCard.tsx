@@ -76,7 +76,7 @@ export const ControlCard = ({
             <div className="flex gap-2">
               <input
                 type="color"
-                value={String(value || '#ffffff')}
+                value={localColor}
                 onChange={(e) => setLocalColor(e.target.value)}
                 disabled={disabled}
                 className="h-12 w-full rounded-md cursor-pointer border border-border/60 bg-card/70 hover:border-primary transition-colors"
