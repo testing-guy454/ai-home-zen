@@ -10,6 +10,7 @@ export interface SensorData {
   fanSpeed: number;
   rgbColor: string;
   mode: 'AUTO' | 'MANUAL';
+  motionState: 'DETECTED' | 'NONE';
 }
 
 export interface AlertData {
@@ -36,6 +37,7 @@ export const useMQTT = () => {
     fanSpeed: 0,
     rgbColor: '#FFFFFF',
     mode: 'MANUAL',
+    motionState: 'NONE',
   });
   const [alerts, setAlerts] = useState<AlertData[]>([]);
   const [aiLogs, setAILogs] = useState<AILog[]>([]);
@@ -59,6 +61,7 @@ export const useMQTT = () => {
         `${BASE_TOPIC}/fan/speed`,
         `${BASE_TOPIC}/color`,
         `${BASE_TOPIC}/mode`,
+        `${BASE_TOPIC}/motion`,
         `${BASE_TOPIC}/alert`,
         `${BASE_TOPIC}/ai/log`,
       ]);
@@ -93,6 +96,12 @@ export const useMQTT = () => {
           break;
         case `${BASE_TOPIC}/mode`:
           setSensorData((prev) => ({ ...prev, mode: payload as 'AUTO' | 'MANUAL' }));
+          break;
+        case `${BASE_TOPIC}/motion`:
+          setSensorData((prev) => ({ ...prev, motionState: payload as 'DETECTED' | 'NONE' }));
+          if (payload === 'DETECTED') {
+            toast.info('Motion detected!', { duration: 3000 });
+          }
           break;
         case `${BASE_TOPIC}/alert`:
           const alert = { message: payload, timestamp: new Date() };
