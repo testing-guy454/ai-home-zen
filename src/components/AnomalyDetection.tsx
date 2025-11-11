@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertTriangle, Info, AlertCircle, Brain, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -27,11 +28,14 @@ interface AnomalyResult {
 export const AnomalyDetection = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnomalyResult | null>(null);
+  const [timeFrame, setTimeFrame] = useState('24h');
 
   const runAnalysis = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('ai-anomaly-detection');
+      const { data, error } = await supabase.functions.invoke('ai-anomaly-detection', {
+        body: { timeFrame }
+      });
 
       if (error) throw error;
 
@@ -81,19 +85,33 @@ export const AnomalyDetection = () => {
               Analyze sensor patterns and detect unusual behavior
             </CardDescription>
           </div>
-          <Button onClick={runAnalysis} disabled={loading} className="gap-2">
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <Brain className="h-4 w-4" />
-                Run Analysis
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Select value={timeFrame} onValueChange={setTimeFrame}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1h">Last Hour</SelectItem>
+                <SelectItem value="24h">Last 24 Hours</SelectItem>
+                <SelectItem value="7d">Last 7 Days</SelectItem>
+                <SelectItem value="30d">Last 30 Days</SelectItem>
+                <SelectItem value="all">All Time</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={runAnalysis} disabled={loading} className="gap-2">
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Brain className="h-4 w-4" />
+                  Run Analysis
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

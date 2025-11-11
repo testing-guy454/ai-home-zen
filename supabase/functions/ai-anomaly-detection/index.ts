@@ -12,18 +12,45 @@ serve(async (req) => {
   }
 
   try {
+    const { timeFrame = '24h' } = await req.json().catch(() => ({}));
+    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch last 100 sensor readings for analysis
-    const { data: readings, error: dbError } = await supabase
+    // Calculate time range
+    let timeFilter = new Date();
+    switch (timeFrame) {
+      case '1h':
+        timeFilter.setHours(timeFilter.getHours() - 1);
+        break;
+      case '24h':
+        timeFilter.setHours(timeFilter.getHours() - 24);
+        break;
+      case '7d':
+        timeFilter.setDate(timeFilter.getDate() - 7);
+        break;
+      case '30d':
+        timeFilter.setDate(timeFilter.getDate() - 30);
+        break;
+      case 'all':
+        timeFilter = new Date(0); // Beginning of time
+        break;
+    }
+
+    // Fetch sensor readings for analysis
+    let query = supabase
       .from('sensor_readings')
       .select('*')
-      .order('created_at', { ascending: false })
-      .limit(100);
+      .order('created_at', { ascending: false });
+
+    if (timeFrame !== 'all') {
+      query = query.gte('created_at', timeFilter.toISOString());
+    }
+
+    const { data: readings, error: dbError } = await query.limit(1000);
 
     if (dbError) throw dbError;
 
@@ -43,10 +70,16 @@ serve(async (req) => {
     const stdHum = Math.sqrt(hums.reduce((sq, n) => sq + Math.pow(n - avgHum, 2), 0) / hums.length);
 
     // Prepare data summary for AI
+    const timeFrameLabel = timeFrame === '1h' ? 'last hour' : 
+                          timeFrame === '24h' ? 'last 24 hours' : 
+                          timeFrame === '7d' ? 'last 7 days' : 
+                          timeFrame === '30d' ? 'last 30 days' : 'all time';
+    
     const dataSummary = `
-Recent sensor data analysis:
+Sensor data analysis for ${timeFrameLabel}:
 - Temperature: avg=${avgTemp.toFixed(1)}°C, std=${stdTemp.toFixed(1)}°C, range=${Math.min(...temps).toFixed(1)}-${Math.max(...temps).toFixed(1)}°C
 - Humidity: avg=${avgHum.toFixed(1)}%, std=${stdHum.toFixed(1)}%, range=${Math.min(...hums).toFixed(1)}-${Math.max(...hums).toFixed(1)}%
+- Total readings analyzed: ${readings.length}
 - Recent readings: ${readings.slice(0, 5).map(r => `${r.temperature}°C/${r.humidity}%`).join(', ')}
 - Fan usage patterns: ${readings.filter(r => r.fan_state === 'ON').length}/${readings.length} readings with fan ON
 - Motion events: ${readings.filter(r => r.motion_state === 'DETECTED').length}/${readings.length} readings with motion
