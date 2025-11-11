@@ -19,7 +19,7 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Call Lovable AI (Gemini) to determine optimal fan speed
+    // Call Lovable AI (Gemini) to determine optimal fan speed using tool calling
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -31,14 +31,38 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a smart home automation AI. Based on temperature and humidity, determine optimal fan speed (0-100%). Consider comfort levels: ideal temp is 22-26°C, ideal humidity is 40-60%. Higher values require higher fan speed. Respond only with a JSON object containing fanSpeed (number) and reason (string).'
+            content: 'You are a smart home automation AI. Based on temperature and humidity, determine optimal fan speed (0-100%). Consider comfort levels: ideal temp is 22-26°C, ideal humidity is 40-60%. Higher values require higher fan speed.'
           },
           {
             role: 'user',
             content: `Current conditions: Temperature ${temperature}°C, Humidity ${humidity}%. What fan speed should I use?`
           }
         ],
-        response_format: { type: "json_object" }
+        tools: [
+          {
+            type: 'function',
+            function: {
+              name: 'set_fan_speed',
+              description: 'Set the optimal fan speed based on environmental conditions',
+              parameters: {
+                type: 'object',
+                properties: {
+                  fanSpeed: {
+                    type: 'number',
+                    description: 'Optimal fan speed percentage (0-100)'
+                  },
+                  reason: {
+                    type: 'string',
+                    description: 'Explanation for the chosen fan speed'
+                  }
+                },
+                required: ['fanSpeed', 'reason'],
+                additionalProperties: false
+              }
+            }
+          }
+        ],
+        tool_choice: { type: 'function', function: { name: 'set_fan_speed' } }
       }),
     });
 
@@ -49,8 +73,13 @@ serve(async (req) => {
     }
 
     const aiData = await response.json();
-    const aiResponse = JSON.parse(aiData.choices[0].message.content);
+    const toolCall = aiData.choices[0].message.tool_calls?.[0];
     
+    if (!toolCall || !toolCall.function.arguments) {
+      throw new Error('No tool call response from AI');
+    }
+
+    const aiResponse = JSON.parse(toolCall.function.arguments);
     console.log('AI recommendation:', aiResponse);
 
     return new Response(
