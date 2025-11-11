@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { NotificationSettings } from '@/components/NotificationSettings';
 import { AnomalyDetection } from '@/components/AnomalyDetection';
 import { useNotifications } from '@/hooks/useNotifications';
-import { ThemeToggle } from '@/components/ThemeToggle';
+// import { ThemeToggle } from '@/components/ThemeToggle';
 
 const Settings = () => {
   const {
@@ -33,7 +33,6 @@ const Settings = () => {
               <p className="text-muted-foreground mt-1">Notifications, theme, and AI analysis</p>
             </div>
           </div>
-          <ThemeToggle />
         </div>
 
         {/* AI Anomaly Detection */}
