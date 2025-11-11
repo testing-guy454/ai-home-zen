@@ -59,6 +59,13 @@ export default {
         humidity: "hsl(var(--humidity))",
         fan: "hsl(var(--fan))",
         bulb: "hsl(var(--bulb))",
+        // Sidebar tokens
+        sidebar: "hsl(var(--sidebar))",
+        "sidebar-foreground": "hsl(var(--sidebar-foreground))",
+        "sidebar-accent": "hsl(var(--sidebar-accent))",
+        "sidebar-accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+        "sidebar-border": "hsl(var(--sidebar-border))",
+        "sidebar-ring": "hsl(var(--sidebar-ring))",
       },
       borderRadius: {
         lg: "var(--radius)",
