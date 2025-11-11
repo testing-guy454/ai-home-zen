@@ -2,3 +2,6 @@ project_id = "vibbzpqhysmhhksncfru"
 
 [functions.ai-fan-control]
 verify_jwt = false
+
+[functions.ai-anomaly-detection]
+verify_jwt = false

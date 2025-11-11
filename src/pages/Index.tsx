@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMQTT } from '@/hooks/useMQTT';
 import { useSensorLogger } from '@/hooks/useSensorLogger';
+import { useNotifications } from '@/hooks/useNotifications';
 import { SensorCard } from '@/components/SensorCard';
 import { ControlCard } from '@/components/ControlCard';
 import { ChartCard } from '@/components/ChartCard';
@@ -8,7 +9,8 @@ import { AIInsights } from '@/components/AIInsights';
 import { AlertBanner } from '@/components/AlertBanner';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
 import { Button } from '@/components/ui/button';
-import { Thermometer, Droplets, Lightbulb, Fan, Palette, Cpu, Eye, BarChart3 } from 'lucide-react';
+import { Thermometer, Droplets, Lightbulb, Fan, Palette, Cpu, Eye, BarChart3, Settings as SettingsIcon } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
@@ -30,6 +32,21 @@ const Index = () => {
 
   // Log sensor data to database
   useSensorLogger(sensorData, isConnected);
+
+  // Notification system
+  const { checkThresholds } = useNotifications();
+  const lastCheckedRef = useRef<string>('');
+
+  // Check thresholds when sensor data changes
+  useEffect(() => {
+    if (!isConnected || sensorData.temperature === 0) return;
+
+    const dataKey = `${sensorData.temperature}-${sensorData.humidity}-${sensorData.motionState}`;
+    if (dataKey === lastCheckedRef.current) return;
+    lastCheckedRef.current = dataKey;
+
+    checkThresholds(sensorData.temperature, sensorData.humidity, sensorData.motionState);
+  }, [sensorData.temperature, sensorData.humidity, sensorData.motionState, isConnected, checkThresholds]);
 
   // AI automation: periodically send sensor data for AI processing
   useEffect(() => {
@@ -93,22 +110,30 @@ const Index = () => {
             </h1>
             <p className="text-muted-foreground mt-1">IoT Dashboard with AI Automation</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <ConnectionStatus isConnected={isConnected} />
+            <ThemeToggle />
             <Link to="/analytics">
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" size="sm" className="gap-2">
                 <BarChart3 className="h-4 w-4" />
-                Analytics
+                <span className="hidden md:inline">Analytics</span>
+              </Button>
+            </Link>
+            <Link to="/settings">
+              <Button variant="outline" size="sm" className="gap-2">
+                <SettingsIcon className="h-4 w-4" />
+                <span className="hidden md:inline">Settings</span>
               </Button>
             </Link>
             <Button
               variant={sensorData.mode === 'AUTO' ? 'default' : 'secondary'}
               onClick={toggleMode}
               disabled={!isConnected}
+              size="sm"
               className="gap-2"
             >
               <Cpu className="h-4 w-4" />
-              {sensorData.mode} MODE
+              <span className="hidden md:inline">{sensorData.mode} MODE</span>
             </Button>
           </div>
         </div>
