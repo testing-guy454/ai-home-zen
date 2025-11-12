@@ -120,6 +120,7 @@ const ensureClient = () => {
   initializing = true;
 
   // Create client with reconnect enabled
+  clearScheduledDisconnect();
   const client = mqtt.connect(BROKER_URL, { reconnectPeriod: 2000, connectTimeout: 30000 });
   shared.client = client;
 
