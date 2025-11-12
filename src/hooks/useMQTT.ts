@@ -298,6 +298,7 @@ export const useMQTT = () => {
 
   return {
     isConnected: state.isConnected,
+    connectionReason: state.connectionReason ?? null,
     sensorData: state.sensorData,
     alerts: state.alerts,
     aiLogs: state.aiLogs,
