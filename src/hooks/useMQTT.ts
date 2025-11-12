@@ -91,6 +91,8 @@ const scheduleDisconnect = (ms = 60000) => {
       const client = shared.client;
       if (client) {
         console.log('No subscribers - closing MQTT client due to inactivity');
+        shared.connectionReason = 'idle-timeout';
+        toast.info('MQTT connection terminated due to inactivity');
         try {
           client.removeAllListeners();
         } catch (e) {
@@ -108,7 +110,7 @@ const scheduleDisconnect = (ms = 60000) => {
     } finally {
       shared.client = null;
       shared.isConnected = false;
-      // reset shared data? keep last known sensor values
+      // keep last known sensor values, but set reason
       notify();
       idleTimer = null;
     }
