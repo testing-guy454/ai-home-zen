@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { AnomalyDetection } from '@/components/AnomalyDetection';
 import { AIInsights } from '@/components/AIInsights';
 import { useMQTT } from '@/hooks/useMQTT';
+import { Button } from '@/components/ui/button';
 
 const AI = () => {
   const { aiLogs } = useMQTT();
