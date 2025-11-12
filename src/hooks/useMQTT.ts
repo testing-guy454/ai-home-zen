@@ -142,20 +142,47 @@ export const useMQTT = () => {
       toast.error('Disconnected from Smart Home');
     });
 
+    // Handle errors
+    const handleError = (err: Error) => {
+      console.error('MQTT Error:', err);
+      toast.error('Connection error');
+    };
+
+    mqttClient.on('error', handleError);
+
     setClient(mqttClient);
 
     return () => {
-      mqttClient.end();
+      try {
+        mqttClient.removeListener('connect', handleConnect as any);
+        mqttClient.removeListener('error', handleError as any);
+        mqttClient.removeAllListeners('message');
+        // End the client gracefully (allow reconnect attempts to stop)
+        if (mqttClient.connected || mqttClient.disconnecting || mqttClient.reconnecting) {
+          mqttClient.end(true);
+        } else {
+          mqttClient.end();
+        }
+      } catch (err) {
+        console.error('Error while cleaning up MQTT client:', err);
+      }
     };
   }, []);
 
   const publish = useCallback(
     (topic: string, message: string) => {
-      if (client && isConnected) {
-        client.publish(`${BASE_TOPIC}/${topic}`, message);
+      if (client && client.connected && !(client as any).disconnecting) {
+        client.publish(`${BASE_TOPIC}/${topic}`, message, (err) => {
+          if (err) {
+            console.error('Publish error:', err);
+            toast.error('Failed to send command');
+          }
+        });
+      } else {
+        console.warn('Publish skipped, MQTT client not connected');
       }
     },
-    [client, isConnected]
+    [client]
   );
 
   const controlBulb = useCallback(
