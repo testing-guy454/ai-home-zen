@@ -9,7 +9,7 @@ import { AIInsights } from '@/components/AIInsights';
 import { AlertBanner } from '@/components/AlertBanner';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
 import { Button } from '@/components/ui/button';
-import { Thermometer, Droplets, Lightbulb, Fan, Palette, Cpu, Eye, BarChart3, Settings as SettingsIcon } from 'lucide-react';
+import { Thermometer, Droplets, Lightbulb, Fan, Palette, Cpu, Eye, BarChart3, Brain, Settings as SettingsIcon } from 'lucide-react';
 // import { ThemeToggle } from '@/components/ThemeToggle';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -116,6 +116,12 @@ const Index = () => {
               <Button variant="outline" size="sm" className="gap-2">
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden md:inline">Analytics</span>
+              </Button>
+            </Link>
+            <Link to="/ai">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Brain className="h-4 w-4" />
+                <span className="hidden md:inline">AI</span>
               </Button>
             </Link>
             <Link to="/settings">
