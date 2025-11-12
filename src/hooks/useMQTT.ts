@@ -214,13 +214,16 @@ const ensureClient = () => {
 
   const handleDisconnect = () => {
     shared.isConnected = false;
+    shared.connectionReason = 'broker-disconnected';
     toast.error('Disconnected from Smart Home');
     notify();
   };
 
   const handleError = (err: Error) => {
     console.error('MQTT Error (singleton):', err);
+    shared.connectionReason = 'error';
     toast.error('Connection error');
+    notify();
   };
 
   client.on('connect', handleConnect);
