@@ -27,11 +27,21 @@ export const ControlCard = ({
   disabled,
 }: ControlCardProps) => {
   const [localColor, setLocalColor] = useState<string>(String(value || '#ffffff'));
+  const [optimisticToggleValue, setOptimisticToggleValue] = useState<boolean>(value as boolean);
+  const [optimisticSliderValue, setOptimisticSliderValue] = useState<number>(typeof value === 'number' ? value : 0);
 
   useEffect(() => {
     // keep local state in sync when parent updates value
     if (typeof value === 'string' && value !== localColor) {
       setLocalColor(value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  useEffect(() => {
+    // sync optimistic toggle value with server value
+    if (typeof value === 'boolean') {
+      setOptimisticToggleValue(value);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
@@ -42,6 +52,20 @@ export const ControlCard = ({
     if (typeof value === 'number' && value !== localSpeed) setLocalSpeed(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
+
+  const handleToggle = (newState: boolean) => {
+    // Optimistic update - update UI immediately
+    setOptimisticToggleValue(newState);
+    // Then call the actual handler
+    onToggle?.(newState);
+  };
+
+  const handleSliderChange = (v: number[]) => {
+    // Optimistic update for visual feedback
+    setOptimisticSliderValue(v[0]);
+    // Then call the actual handler on commit
+    onSliderChange?.(v);
+  };
 
   return (
     <Card className="group relative overflow-hidden">
