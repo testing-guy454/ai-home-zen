@@ -148,43 +148,48 @@ const Index = () => {
         <AlertBanner alerts={alerts} />
 
         {/* Sensor Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <SensorCard
-            title="Temperature"
-            value={sensorData.temperature.toFixed(1)}
-            unit="°C"
-            icon={Thermometer}
-            gradient="var(--gradient-warm)"
-          />
-          <SensorCard
-            title="Humidity"
-            value={sensorData.humidity.toFixed(1)}
-            unit="%"
-            icon={Droplets}
-            gradient="var(--gradient-cool)"
-          />
-          <SensorCard
-            title="Motion"
-            value={sensorData.motionState}
-            icon={Eye}
-            color={sensorData.motionState === 'DETECTED' ? 'destructive' : 'muted'}
-          />
-          <SensorCard
-            title="Bulb"
-            value={sensorData.bulbState}
-            icon={Lightbulb}
-            color="bulb"
-          />
-          <SensorCard
-            title="Fan"
-            value={`${sensorData.fanSpeed}%`}
-            icon={Fan}
-            color="fan"
-          />
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-foreground/90">Live Sensor Data</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <SensorCard
+              title="Temperature"
+              value={sensorData.temperature.toFixed(1)}
+              unit="°C"
+              icon={Thermometer}
+              gradient="var(--gradient-warm)"
+            />
+            <SensorCard
+              title="Humidity"
+              value={sensorData.humidity.toFixed(1)}
+              unit="%"
+              icon={Droplets}
+              gradient="var(--gradient-cool)"
+            />
+            <SensorCard
+              title="Motion"
+              value={sensorData.motionState}
+              icon={Eye}
+              color={sensorData.motionState === 'DETECTED' ? 'destructive' : 'muted'}
+            />
+            <SensorCard
+              title="Bulb"
+              value={sensorData.bulbState}
+              icon={Lightbulb}
+              color="bulb"
+            />
+            <SensorCard
+              title="Fan"
+              value={`${sensorData.fanSpeed}%`}
+              icon={Fan}
+              color="fan"
+            />
+          </div>
         </div>
 
         {/* Controls */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-foreground/90">Control Panel</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <ControlCard
             title="Bulb Control"
             icon={Lightbulb}
@@ -217,22 +222,26 @@ const Index = () => {
             onColorChange={setRGBColor}
             disabled={!isConnected}
           />
+          </div>
         </div>
 
         {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <ChartCard
-            title="Temperature History"
-            data={temperatureHistory}
-            color="hsl(var(--temperature))"
-            unit="°C"
-          />
-          <ChartCard
-            title="Humidity History"
-            data={humidityHistory}
-            color="hsl(var(--humidity))"
-            unit="%"
-          />
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-foreground/90">Analytics</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ChartCard
+              title="Temperature History"
+              data={temperatureHistory}
+              color="hsl(var(--temperature))"
+              unit="°C"
+            />
+            <ChartCard
+              title="Humidity History"
+              data={humidityHistory}
+              color="hsl(var(--humidity))"
+              unit="%"
+            />
+          </div>
         </div>
 
         {/* AI Insights */}
