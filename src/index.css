@@ -73,54 +73,56 @@ All colors MUST be HSL.
 
   .light {
     --background: 0 0% 100%;
-    --foreground: 220 26% 14%;
+    --foreground: 210 35% 9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 26% 14%;
+    --card-foreground: 210 35% 9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 26% 14%;
+    --popover-foreground: 210 35% 9%;
 
-    --primary: 189 94% 43%;
+    --primary: 175 100% 42%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96.1%;
-    --secondary-foreground: 220 26% 14%;
+    --secondary-foreground: 210 35% 9%;
 
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 189 94% 43%;
+    --accent: 280 85% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 76% 36%;
+    --success: 142 76% 46%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning-foreground: 210 35% 9%;
 
     --temperature: 14 100% 57%;
     --humidity: 199 89% 48%;
-    --fan: 189 94% 43%;
+    --fan: 175 100% 42%;
     --bulb: 45 93% 47%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 189 94% 43%;
+    --border: 210 40% 90%;
+    --input: 210 40% 93%;
+    --ring: 175 100% 46%;
 
-    --shadow-glow: 0 0 30px hsl(189 94% 43% / 0.2);
-    --shadow-card: 0 2px 10px hsl(0 0% 0% / 0.1);
+    --shadow-glow: 0 0 30px hsl(175 100% 46% / 0.15);
+    --shadow-card: 0 4px 16px hsl(0 0% 0% / 0.08);
+    --shadow-sm: 0 2px 6px hsl(0 0% 0% / 0.06);
+    --shadow-lg: 0 12px 24px hsl(0 0% 0% / 0.12);
 
     /* Sidebar theme (light) */
     --sidebar: 210 40% 98%;
-    --sidebar-foreground: 220 26% 14%;
+    --sidebar-foreground: 210 35% 9%;
     --sidebar-accent: 210 40% 96.1%;
-    --sidebar-accent-foreground: 220 26% 14%;
-    --sidebar-border: 214.3 31.8% 91.4%;
-    --sidebar-ring: 189 94% 43%;
+    --sidebar-accent-foreground: 210 35% 9%;
+    --sidebar-border: 210 40% 90%;
+    --sidebar-ring: 175 100% 46%;
   }
 }
 
