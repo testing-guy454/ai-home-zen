@@ -9,7 +9,7 @@ import { AIInsights } from '@/components/AIInsights';
 import { AlertBanner } from '@/components/AlertBanner';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
 import { Button } from '@/components/ui/button';
-import { Thermometer, Droplets, Lightbulb, Fan, Palette, Cpu, Eye, BarChart3, Settings as SettingsIcon } from 'lucide-react';
+import { Thermometer, Droplets, Lightbulb, Fan, Palette, Cpu, Eye, BarChart3, Brain, Settings as SettingsIcon } from 'lucide-react';
 // import { ThemeToggle } from '@/components/ThemeToggle';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -18,6 +18,7 @@ import { Link } from 'react-router-dom';
 const Index = () => {
   const {
     isConnected,
+    connectionReason,
     sensorData,
     alerts,
     aiLogs,
@@ -111,11 +112,17 @@ const Index = () => {
             <p className="text-muted-foreground mt-1">IoT Dashboard with AI Automation</p>
           </div>
           <div className="flex items-center gap-2">
-            <ConnectionStatus isConnected={isConnected} />
+            <ConnectionStatus isConnected={isConnected} reason={connectionReason} />
             <Link to="/analytics">
               <Button variant="outline" size="sm" className="gap-2">
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden md:inline">Analytics</span>
+              </Button>
+            </Link>
+            <Link to="/ai">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Brain className="h-4 w-4" />
+                <span className="hidden md:inline">AI</span>
               </Button>
             </Link>
             <Link to="/settings">

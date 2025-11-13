@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-do
 import Index from "./pages/Index";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import AI from "./pages/AI";
 import NotFound from "./pages/NotFound";
 import {
   SidebarProvider,
@@ -24,7 +25,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { BarChart3, Home, Settings as SettingsIcon } from "lucide-react";
+import { BarChart3, Home, Settings as SettingsIcon, Brain } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,8 @@ function TopBar() {
     ? "Dashboard"
     : location.pathname === "/analytics"
     ? "Analytics"
+    : location.pathname === "/ai"
+    ? "AI & Automation"
     : location.pathname === "/settings"
     ? "Settings"
     : "";
@@ -85,6 +88,14 @@ function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname.startsWith("/ai")}>
+                  <Link to="/ai">
+                    <Brain />
+                    <span>AI</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={location.pathname.startsWith("/settings")}>
                   <Link to="/settings">
                     <SettingsIcon />
@@ -119,6 +130,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/ai" element={<AI />} />
               <Route path="/settings" element={<Settings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

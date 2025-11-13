@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { NotificationSettings } from '@/components/NotificationSettings';
-import { AnomalyDetection } from '@/components/AnomalyDetection';
 import { useNotifications } from '@/hooks/useNotifications';
 // import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -28,15 +27,12 @@ const Settings = () => {
             </Link>
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Settings & AI
+                Settings
               </h1>
-              <p className="text-muted-foreground mt-1">Notifications, theme, and AI analysis</p>
+              <p className="text-muted-foreground mt-1">Notifications and preferences</p>
             </div>
           </div>
         </div>
-
-        {/* AI Anomaly Detection */}
-        <AnomalyDetection />
 
         {/* Notification Settings */}
         <NotificationSettings
