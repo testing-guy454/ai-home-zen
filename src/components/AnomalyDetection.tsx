@@ -139,26 +139,34 @@ export const AnomalyDetection = () => {
             {/* Anomalies */}
             {result.anomalies.length > 0 ? (
               <div className="space-y-3">
-                <h4 className="text-sm font-medium">Detected Issues</h4>
-                {result.anomalies.map((anomaly, index) => (
-                  <Alert key={index} variant={getVariant(anomaly.type) as any}>
-                    <div className="flex items-start gap-3">
-                      {getIcon(anomaly.type)}
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <AlertTitle className="mb-0">{anomaly.title}</AlertTitle>
-                          <Badge variant="outline">{anomaly.type}</Badge>
+                <h4 className="text-sm font-semibold text-foreground/90 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-warning" />
+                  Detected Issues ({result.anomalies.length})
+                </h4>
+                <div className="space-y-3">
+                  {result.anomalies.map((anomaly, index) => (
+                    <Alert key={index} variant={getVariant(anomaly.type) as any}>
+                      <div className="flex items-start gap-4">
+                        <div className="p-2 bg-current/10 rounded-lg flex-shrink-0 mt-0.5">
+                          {getIcon(anomaly.type)}
                         </div>
-                        <AlertDescription className="text-sm">
-                          {anomaly.description}
-                        </AlertDescription>
-                        <div className="mt-2 p-2 bg-background/50 rounded text-sm">
-                          <strong>Recommendation:</strong> {anomaly.recommendation}
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <AlertTitle className="mb-0 text-base">{anomaly.title}</AlertTitle>
+                            <Badge variant="outline" className="text-xs">{anomaly.type.toUpperCase()}</Badge>
+                          </div>
+                          <AlertDescription className="text-sm">
+                            {anomaly.description}
+                          </AlertDescription>
+                          <div className="mt-3 p-3 bg-background/60 rounded-lg border border-border/40 text-sm">
+                            <p className="font-semibold text-foreground/90 mb-1">💡 Recommendation:</p>
+                            <p className="text-foreground/80">{anomaly.recommendation}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Alert>
-                ))}
+                    </Alert>
+                  ))}
+                </div>
               </div>
             ) : (
               <Alert>
@@ -172,13 +180,16 @@ export const AnomalyDetection = () => {
 
             {/* Insights */}
             {result.insights.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium">AI Insights</h4>
-                <ul className="space-y-2">
+              <div className="space-y-3 p-4 bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl border border-accent/20">
+                <h4 className="text-sm font-semibold text-foreground/90 flex items-center gap-2">
+                  <Brain className="h-4 w-4 text-accent" />
+                  AI Insights
+                </h4>
+                <ul className="space-y-2.5">
                   {result.insights.map((insight, index) => (
-                    <li key={index} className="text-sm text-muted-foreground flex gap-2">
-                      <span className="text-primary">•</span>
-                      <span>{insight}</span>
+                    <li key={index} className="text-sm text-foreground/85 flex gap-3 items-start">
+                      <span className="text-accent font-bold text-lg leading-none mt-0.5">✓</span>
+                      <span className="font-medium">{insight}</span>
                     </li>
                   ))}
                 </ul>
@@ -188,9 +199,12 @@ export const AnomalyDetection = () => {
         )}
 
         {!result && !loading && (
-          <div className="text-center py-8 text-muted-foreground">
-            <Brain className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Click "Run Analysis" to detect anomalies in your sensor data</p>
+          <div className="text-center py-12 text-muted-foreground">
+            <div className="inline-flex p-4 bg-secondary/50 rounded-full mb-4">
+              <Brain className="h-12 w-12 opacity-40" />
+            </div>
+            <p className="font-medium">Click "Run Analysis" to detect anomalies in your sensor data</p>
+            <p className="text-xs text-muted-foreground/60 mt-2">Analysis may take a few moments to complete</p>
           </div>
         )}
       </CardContent>
