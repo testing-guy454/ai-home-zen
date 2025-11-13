@@ -102,14 +102,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
               Smart Home Control
             </h1>
-            <p className="text-muted-foreground mt-1">IoT Dashboard with AI Automation</p>
+            <p className="text-base text-muted-foreground/80 font-medium">Real-time IoT Dashboard with AI Automation</p>
           </div>
           <div className="flex items-center gap-2">
             <ConnectionStatus isConnected={isConnected} reason={connectionReason} />
