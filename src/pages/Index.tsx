@@ -101,32 +101,32 @@ const Index = () => {
   }, [sensorData.rgbColor, setRGBColor]);
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="px-4 md:px-8 py-0">
+      <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
               Smart Home Control
             </h1>
-            <p className="text-muted-foreground mt-1">IoT Dashboard with AI Automation</p>
+            <p className="text-base text-muted-foreground/80 font-medium">Real-time IoT Dashboard with AI Automation</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <ConnectionStatus isConnected={isConnected} reason={connectionReason} />
             <Link to="/analytics">
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button variant="outline" size="sm" className="gap-2 font-medium">
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden md:inline">Analytics</span>
               </Button>
             </Link>
             <Link to="/ai">
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button variant="outline" size="sm" className="gap-2 font-medium">
                 <Brain className="h-4 w-4" />
                 <span className="hidden md:inline">AI</span>
               </Button>
             </Link>
             <Link to="/settings">
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button variant="outline" size="sm" className="gap-2 font-medium">
                 <SettingsIcon className="h-4 w-4" />
                 <span className="hidden md:inline">Settings</span>
               </Button>
@@ -136,7 +136,7 @@ const Index = () => {
               onClick={toggleMode}
               disabled={!isConnected}
               size="sm"
-              className="gap-2"
+              className="gap-2 font-medium"
             >
               <Cpu className="h-4 w-4" />
               <span className="hidden md:inline">{sensorData.mode} MODE</span>
@@ -148,43 +148,48 @@ const Index = () => {
         <AlertBanner alerts={alerts} />
 
         {/* Sensor Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <SensorCard
-            title="Temperature"
-            value={sensorData.temperature.toFixed(1)}
-            unit="°C"
-            icon={Thermometer}
-            gradient="var(--gradient-warm)"
-          />
-          <SensorCard
-            title="Humidity"
-            value={sensorData.humidity.toFixed(1)}
-            unit="%"
-            icon={Droplets}
-            gradient="var(--gradient-cool)"
-          />
-          <SensorCard
-            title="Motion"
-            value={sensorData.motionState}
-            icon={Eye}
-            color={sensorData.motionState === 'DETECTED' ? 'destructive' : 'muted'}
-          />
-          <SensorCard
-            title="Bulb"
-            value={sensorData.bulbState}
-            icon={Lightbulb}
-            color="bulb"
-          />
-          <SensorCard
-            title="Fan"
-            value={`${sensorData.fanSpeed}%`}
-            icon={Fan}
-            color="fan"
-          />
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-foreground/90">Live Sensor Data</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <SensorCard
+              title="Temperature"
+              value={sensorData.temperature.toFixed(1)}
+              unit="°C"
+              icon={Thermometer}
+              gradient="var(--gradient-warm)"
+            />
+            <SensorCard
+              title="Humidity"
+              value={sensorData.humidity.toFixed(1)}
+              unit="%"
+              icon={Droplets}
+              gradient="var(--gradient-cool)"
+            />
+            <SensorCard
+              title="Motion"
+              value={sensorData.motionState}
+              icon={Eye}
+              color={sensorData.motionState === 'DETECTED' ? 'destructive' : 'muted'}
+            />
+            <SensorCard
+              title="Bulb"
+              value={sensorData.bulbState}
+              icon={Lightbulb}
+              color="bulb"
+            />
+            <SensorCard
+              title="Fan"
+              value={`${sensorData.fanSpeed}%`}
+              icon={Fan}
+              color="fan"
+            />
+          </div>
         </div>
 
         {/* Controls */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-foreground/90">Control Panel</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <ControlCard
             title="Bulb Control"
             icon={Lightbulb}
@@ -217,22 +222,26 @@ const Index = () => {
             onColorChange={setRGBColor}
             disabled={!isConnected}
           />
+          </div>
         </div>
 
         {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <ChartCard
-            title="Temperature History"
-            data={temperatureHistory}
-            color="hsl(var(--temperature))"
-            unit="°C"
-          />
-          <ChartCard
-            title="Humidity History"
-            data={humidityHistory}
-            color="hsl(var(--humidity))"
-            unit="%"
-          />
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-foreground/90">Analytics</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ChartCard
+              title="Temperature History"
+              data={temperatureHistory}
+              color="hsl(var(--temperature))"
+              unit="°C"
+            />
+            <ChartCard
+              title="Humidity History"
+              data={humidityHistory}
+              color="hsl(var(--humidity))"
+              unit="%"
+            />
+          </div>
         </div>
 
         {/* AI Insights */}

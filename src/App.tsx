@@ -42,13 +42,13 @@ function TopBar() {
     ? "Settings"
     : "";
   return (
-    <div className="sticky top-0 z-10 -mx-4 md:-mx-8 mb-6 border-b bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex items-center justify-between px-4 md:px-8 py-3">
-        <div className="flex items-center gap-3">
-          <SidebarTrigger />
-          <span className="text-lg font-semibold bg-clip-text text-transparent" style={{ backgroundImage: "var(--gradient-primary)" }}>{title}</span>
+    <div className="sticky top-0 z-10 mb-8 border-b border-border/30 bg-background/50 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-sm">
+      <div className="flex items-center justify-between px-4 md:px-8 py-4">
+        <div className="flex items-center gap-4">
+          <SidebarTrigger className="rounded-lg hover:bg-secondary/50 transition-colors" />
+          <span className="text-2xl font-bold bg-clip-text text-transparent" style={{ backgroundImage: "var(--gradient-primary)" }}>{title}</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <ThemeToggle />
         </div>
       </div>
@@ -60,46 +60,46 @@ function AppSidebar() {
   const location = useLocation();
   return (
     <Sidebar variant="inset" collapsible="icon">
-      <SidebarHeader className="px-3 py-4">
-        <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-primary shadow-[var(--shadow-glow)]" />
-          <span className="text-sm font-semibold">SmartHome AI</span>
+      <SidebarHeader className="px-4 py-5 border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-primary to-accent shadow-[var(--shadow-glow)]" />
+          <span className="text-base font-bold bg-clip-text text-transparent" style={{ backgroundImage: "var(--gradient-primary)" }}>SmartHome AI</span>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="py-4">
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider">Navigation</SidebarGroupLabel>
+          <SidebarGroupContent className="mt-3">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname === "/"}>
+                <SidebarMenuButton asChild isActive={location.pathname === "/"} className="h-10 rounded-lg hover:bg-sidebar-accent/60 transition-colors">
                   <Link to="/">
-                    <Home />
-                    <span>Dashboard</span>
+                    <Home className="h-4.5 w-4.5" />
+                    <span className="font-medium">Dashboard</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname.startsWith("/analytics")}>
+                <SidebarMenuButton asChild isActive={location.pathname.startsWith("/analytics")} className="h-10 rounded-lg hover:bg-sidebar-accent/60 transition-colors">
                   <Link to="/analytics">
-                    <BarChart3 />
-                    <span>Analytics</span>
+                    <BarChart3 className="h-4.5 w-4.5" />
+                    <span className="font-medium">Analytics</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname.startsWith("/ai")}>
+                <SidebarMenuButton asChild isActive={location.pathname.startsWith("/ai")} className="h-10 rounded-lg hover:bg-sidebar-accent/60 transition-colors">
                   <Link to="/ai">
-                    <Brain />
-                    <span>AI</span>
+                    <Brain className="h-4.5 w-4.5" />
+                    <span className="font-medium">AI</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname.startsWith("/settings")}>
+                <SidebarMenuButton asChild isActive={location.pathname.startsWith("/settings")} className="h-10 rounded-lg hover:bg-sidebar-accent/60 transition-colors">
                   <Link to="/settings">
-                    <SettingsIcon />
-                    <span>Settings</span>
+                    <SettingsIcon className="h-4.5 w-4.5" />
+                    <span className="font-medium">Settings</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -107,8 +107,8 @@ function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="px-2 py-3">
-        <Button asChild variant="outline" size="sm" className="w-full">
+      <SidebarFooter className="px-3 py-4 border-t border-sidebar-border">
+        <Button asChild variant="outline" size="sm" className="w-full font-medium">
           <a href="https://builder.io" target="_blank" rel="noreferrer">Powered by Builder</a>
         </Button>
       </SidebarFooter>
