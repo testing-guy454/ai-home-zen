@@ -101,7 +101,7 @@ const Index = () => {
   }, [sensorData.rgbColor, setRGBColor]);
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+    <div className="px-4 md:px-8 py-0">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
