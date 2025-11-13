@@ -42,7 +42,7 @@ function TopBar() {
     ? "Settings"
     : "";
   return (
-    <div className="sticky top-0 z-10 -mx-4 md:-mx-8 mb-8 border-b border-border/30 bg-background/50 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-sm">
+    <div className="sticky top-0 z-10 mb-8 border-b border-border/30 bg-background/50 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-sm">
       <div className="flex items-center justify-between px-4 md:px-8 py-4">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="rounded-lg hover:bg-secondary/50 transition-colors" />
