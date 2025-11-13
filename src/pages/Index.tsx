@@ -49,10 +49,22 @@ const Index = () => {
   }, [sensorData.temperature, sensorData.humidity, sensorData.motionState, isConnected, checkThresholds]);
 
   // AI automation: periodically send sensor data for AI processing
+  const retryDelayRef = useRef(60000); // Start with 60 seconds
+  const lastAICallRef = useRef(0);
+  
   useEffect(() => {
     if (sensorData.mode === 'AUTO' && sensorData.temperature > 0) {
-      const interval = setInterval(async () => {
+      const callAI = async () => {
+        const now = Date.now();
+        const timeSinceLastCall = now - lastAICallRef.current;
+        
+        // Ensure minimum delay between calls
+        if (timeSinceLastCall < retryDelayRef.current) {
+          return;
+        }
+        
         try {
+          lastAICallRef.current = now;
           const { data, error } = await supabase.functions.invoke('ai-fan-control', {
             body: {
               temperature: sensorData.temperature,
@@ -60,15 +72,35 @@ const Index = () => {
             },
           });
 
-          if (error) throw error;
+          if (error) {
+            // Check if it's a rate limit error
+            if (error.message?.includes('429') || error.message?.includes('rate_limited')) {
+              // Exponential backoff: double the delay (max 10 minutes)
+              retryDelayRef.current = Math.min(retryDelayRef.current * 2, 600000);
+              toast.error(`AI rate limited. Waiting ${Math.floor(retryDelayRef.current / 1000)}s before retry`);
+              return;
+            }
+            throw error;
+          }
 
+          // Success - reset delay back to 60 seconds
+          retryDelayRef.current = 60000;
+          
           if (data?.fanSpeed !== undefined) {
             setFanSpeed(data.fanSpeed);
+            toast.success(`AI set fan speed to ${data.fanSpeed}%`);
           }
         } catch (error) {
           console.error('AI processing error:', error);
+          toast.error('AI fan control failed');
         }
-      }, 10000); // Every 10 seconds in AUTO mode
+      };
+
+      // Initial call
+      callAI();
+      
+      // Set up interval with current delay
+      const interval = setInterval(callAI, retryDelayRef.current);
 
       return () => clearInterval(interval);
     }
