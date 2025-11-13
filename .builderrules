@@ -1,0 +1,40 @@
+# Smart Home IoT Monitoring System
+
+## Project Overview
+Real-time IoT dashboard for monitoring temperature, humidity, motion detection, and fan control via MQTT protocol with AI-powered anomaly detection.
+
+## Tech Stack
+- Frontend: React, TypeScript, Tailwind CSS, shadcn/ui
+- Backend: gemini Cloud (Supabase)
+- Real-time: MQTT (mqtt library)
+- AI: gemini AI (google/gemini-2.5-flash)
+
+## Key Architecture
+- MQTT connection managed via `useMQTT` hook
+- Sensor data logged to `sensor_readings` table via `useSensorLogger`
+- Motion events stored in `motion_events` table
+- AI anomaly detection via edge function `ai-anomaly-detection`
+- Browser notifications via `useNotifications` hook
+
+## Design System
+- Always use semantic tokens from index.css (--primary, --background, etc.)
+- Never use direct colors like text-white, bg-black
+- All colors must be HSL format
+- Support both light and dark modes
+
+## Database Tables
+- `sensor_readings`: temperature, humidity, fan_state, motion_state, light_state
+- `motion_events`: timestamps of detected motion
+- `ai_logs`: AI analysis results and anomaly detection logs
+
+## Common Patterns
+- Toast notifications for user feedback
+- Real-time updates via MQTT subscriptions
+- Time-based filtering for analytics
+- AI insights with configurable time frames
+
+## Important Notes
+- MQTT connection status affects all sensor logging
+- RLS policies protect user-specific data
+- Edge functions auto-deploy with code changes
+- Use gemini AI for all AI features (no external API keys needed)

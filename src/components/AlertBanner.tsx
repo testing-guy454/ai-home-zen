@@ -12,11 +12,11 @@ export const AlertBanner = ({ alerts }: AlertBannerProps) => {
   return (
     <div className="space-y-2">
       {alerts.slice(0, 3).map((alert, index) => (
-        <Alert key={index} variant="destructive" className="animate-in slide-in-from-top duration-300">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="flex items-center justify-between">
-            <span>{alert.message}</span>
-            <span className="text-xs opacity-70">{alert.timestamp.toLocaleTimeString()}</span>
+        <Alert key={index} variant="destructive" className="animate-in slide-in-from-top duration-300 border border-destructive/40 bg-destructive/10 backdrop-blur-sm">
+          <AlertCircle className="h-5 w-5 text-destructive/90 flex-shrink-0" />
+          <AlertDescription className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 ml-2">
+            <span className="text-sm font-medium text-destructive/95">{alert.message}</span>
+            <span className="text-xs text-destructive/70 font-mono whitespace-nowrap">{alert.timestamp.toLocaleTimeString()}</span>
           </AlertDescription>
         </Alert>
       ))}

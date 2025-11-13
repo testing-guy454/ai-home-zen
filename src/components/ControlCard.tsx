@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { LucideIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface ControlCardProps {
   title: string;
@@ -25,32 +26,78 @@ export const ControlCard = ({
   onColorChange,
   disabled,
 }: ControlCardProps) => {
+  const [localColor, setLocalColor] = useState<string>(String(value || '#ffffff'));
+  const [optimisticToggleValue, setOptimisticToggleValue] = useState<boolean>(value as boolean);
+  const [optimisticSliderValue, setOptimisticSliderValue] = useState<number>(typeof value === 'number' ? value : 0);
+
+  useEffect(() => {
+    // keep local state in sync when parent updates value
+    if (typeof value === 'string' && value !== localColor) {
+      setLocalColor(value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  useEffect(() => {
+    // sync optimistic toggle value with server value
+    if (typeof value === 'boolean') {
+      setOptimisticToggleValue(value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  const [localSpeed, setLocalSpeed] = useState<number>(typeof value === 'number' ? value : 0);
+
+  useEffect(() => {
+    if (typeof value === 'number' && value !== localSpeed) setLocalSpeed(value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  const handleToggle = (newState: boolean) => {
+    // Optimistic update - update UI immediately
+    setOptimisticToggleValue(newState);
+    // Then call the actual handler (this sends MQTT command)
+    onToggle?.(newState);
+  };
+
+  const handleSliderDrag = (v: number[]) => {
+    // Update optimistic value during drag for instant visual feedback
+    setOptimisticSliderValue(v[0]);
+  };
+
   return (
-    <Card className="border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-primary" />
+    <Card className="group relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-accent/10 to-transparent rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
+        <CardTitle className="text-sm font-medium text-muted-foreground/90 tracking-wide uppercase">{title}</CardTitle>
+        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 border border-accent/30 flex items-center justify-center group-hover:from-accent/30 group-hover:to-accent/20 transition-colors">
+          <Icon className="h-5 w-5 text-accent" />
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 relative z-10">
         {type === 'toggle' && (
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-semibold">{value ? 'ON' : 'OFF'}</span>
+          <div className="flex items-center justify-between py-2">
+            <span className="text-lg font-bold bg-clip-text text-transparent transition-all duration-150" style={{ backgroundImage: optimisticToggleValue ? 'var(--gradient-primary)' : 'linear-gradient(to right, var(--muted-foreground), var(--muted-foreground))' }}>
+              {optimisticToggleValue ? 'ON' : 'OFF'}
+            </span>
             <Switch
-              checked={value as boolean}
-              onCheckedChange={onToggle}
+              checked={optimisticToggleValue}
+              onCheckedChange={handleToggle}
               disabled={disabled}
+              className="scale-125"
             />
           </div>
         )}
         {type === 'slider' && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Speed</span>
-              <span className="font-semibold">{value}%</span>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-muted-foreground/80">Speed Control</span>
+              <span className="text-2xl font-bold bg-clip-text text-transparent transition-all duration-150" style={{ backgroundImage: 'var(--gradient-primary)' }}>{optimisticSliderValue}%</span>
             </div>
             <Slider
-              value={[value as number]}
-              onValueChange={onSliderChange}
+              value={[optimisticSliderValue]}
+              onValueChange={handleSliderDrag}
+              onValueCommit={(v) => onSliderChange?.(v)}
               max={100}
               step={1}
               disabled={disabled}
@@ -59,15 +106,26 @@ export const ControlCard = ({
           </div>
         )}
         {type === 'color' && (
-          <div className="space-y-2">
-            <input
-              type="color"
-              value={value as string}
-              onChange={(e) => onColorChange?.(e.target.value)}
-              disabled={disabled}
-              className="w-full h-12 rounded-md cursor-pointer border-2 border-border hover:border-primary transition-colors"
-            />
-            <p className="text-xs text-center text-muted-foreground font-mono">{value}</p>
+          <div className="space-y-3">
+            <div className="flex gap-3">
+              <input
+                type="color"
+                value={localColor}
+                onChange={(e) => setLocalColor(e.target.value)}
+                disabled={disabled}
+                className="h-14 w-full rounded-xl cursor-pointer border border-border/40 bg-card/70 hover:border-accent/50 transition-colors shadow-sm"
+              />
+              <Button
+                onClick={() => onColorChange?.(localColor)}
+                disabled={disabled}
+                variant="default"
+                size="sm"
+                className="min-w-[70px] font-medium"
+              >
+                Apply
+              </Button>
+            </div>
+            <p className="text-xs text-center text-muted-foreground/70 font-mono tracking-wide">{localColor}</p>
           </div>
         )}
       </CardContent>

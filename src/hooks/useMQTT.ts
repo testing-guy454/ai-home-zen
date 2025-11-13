@@ -26,160 +26,284 @@ export interface AILog {
 const BROKER_URL = 'wss://broker.hivemq.com:8884/mqtt';
 const BASE_TOPIC = 'yuvraj/home';
 
+// Shared singleton state so the MQTT connection lives for the lifetime of the page
+type SharedState = {
+  client: MqttClient | null;
+  isConnected: boolean;
+  connectionReason?: string | null;
+  sensorData: SensorData;
+  alerts: AlertData[];
+  aiLogs: AILog[];
+  temperatureHistory: { time: string; value: number }[];
+  humidityHistory: { time: string; value: number }[];
+};
+
+const INITIAL_SENSOR: SensorData = {
+  temperature: 0,
+  humidity: 0,
+  bulbState: 'OFF',
+  fanState: 'OFF',
+  fanSpeed: 0,
+  rgbColor: '#FFFFFF',
+  mode: 'MANUAL',
+  motionState: 'NONE',
+};
+
+// Module-level shared state and subscribers
+const shared: SharedState = {
+  client: null,
+  isConnected: false,
+  connectionReason: null,
+  sensorData: { ...INITIAL_SENSOR },
+  alerts: [],
+  aiLogs: [],
+  temperatureHistory: [],
+  humidityHistory: [],
+};
+
+const subscribers = new Set<(s: SharedState) => void>();
+
+const notify = () => {
+  for (const cb of subscribers) {
+    try {
+      cb(shared);
+    } catch (e) {
+      console.error('Subscriber error', e);
+    }
+  }
+};
+
+let initializing = false;
+let idleTimer: ReturnType<typeof setTimeout> | null = null;
+
+const clearScheduledDisconnect = () => {
+  if (idleTimer) {
+    clearTimeout(idleTimer);
+    idleTimer = null;
+    // console.log('Cleared scheduled MQTT disconnect');
+  }
+};
+
+const scheduleDisconnect = (ms = 60000) => {
+  clearScheduledDisconnect();
+  idleTimer = setTimeout(() => {
+    try {
+      const client = shared.client;
+      if (client) {
+        console.log('No subscribers - closing MQTT client due to inactivity');
+        shared.connectionReason = 'idle-timeout';
+        toast.info('MQTT connection terminated due to inactivity');
+        try {
+          client.removeAllListeners();
+        } catch (e) {
+          console.warn('Error removing listeners before end', e);
+        }
+        try {
+          // force close
+          client.end(true);
+        } catch (e) {
+          try { client.end(); } catch (e2) { /* ignore */ }
+        }
+      }
+    } catch (err) {
+      console.error('Error during scheduled MQTT disconnect:', err);
+    } finally {
+      shared.client = null;
+      shared.isConnected = false;
+      // keep last known sensor values, but set reason
+      notify();
+      idleTimer = null;
+    }
+  }, ms);
+};
+
+const ensureClient = () => {
+  if (shared.client) return shared.client;
+  if (initializing) return null;
+
+  initializing = true;
+
+  // Create client with reconnect enabled
+  clearScheduledDisconnect();
+  const client = mqtt.connect(BROKER_URL, { reconnectPeriod: 2000, connectTimeout: 30000 });
+  shared.client = client;
+
+  const handleConnect = () => {
+    console.log('Connected to MQTT broker (singleton)');
+    shared.isConnected = true;
+    shared.connectionReason = null;
+    toast.success('Connected to Smart Home');
+
+    // Subscribe safely
+    try {
+      if (!(client as any).disconnecting && client.connected) {
+        client.subscribe([
+          `${BASE_TOPIC}/temp`,
+          `${BASE_TOPIC}/hum`,
+          `${BASE_TOPIC}/bulb`,
+          `${BASE_TOPIC}/fan`,
+          `${BASE_TOPIC}/fan/speed`,
+          `${BASE_TOPIC}/color`,
+          `${BASE_TOPIC}/mode`,
+          `${BASE_TOPIC}/motion`,
+          `${BASE_TOPIC}/alert`,
+          `${BASE_TOPIC}/ai/log`,
+        ], (err, granted) => {
+          if (err) console.error('Subscribe error:', err);
+          else console.log('Subscribed:', granted.map(g => g.topic).join(', '));
+        });
+      } else {
+        console.warn('Skipped subscribe, client disconnecting/not connected');
+      }
+    } catch (err) {
+      console.error('Subscribe exception', err);
+    }
+
+    notify();
+  };
+
+  const handleMessage = (topic: string, message: Buffer) => {
+    const payload = message.toString();
+    const now = new Date().toLocaleTimeString();
+
+    switch (topic) {
+      case `${BASE_TOPIC}/temp`: {
+        const temp = parseFloat(payload);
+        shared.sensorData.temperature = temp;
+        shared.temperatureHistory = [...shared.temperatureHistory.slice(-19), { time: now, value: temp }];
+        break;
+      }
+      case `${BASE_TOPIC}/hum`: {
+        const hum = parseFloat(payload);
+        shared.sensorData.humidity = hum;
+        shared.humidityHistory = [...shared.humidityHistory.slice(-19), { time: now, value: hum }];
+        break;
+      }
+      case `${BASE_TOPIC}/bulb`:
+        shared.sensorData.bulbState = payload as 'ON' | 'OFF';
+        break;
+      case `${BASE_TOPIC}/fan`:
+        shared.sensorData.fanState = payload as 'ON' | 'OFF';
+        break;
+      case `${BASE_TOPIC}/fan/speed`:
+        shared.sensorData.fanSpeed = parseInt(payload) || 0;
+        break;
+      case `${BASE_TOPIC}/color`:
+        shared.sensorData.rgbColor = payload;
+        break;
+      case `${BASE_TOPIC}/mode`:
+        shared.sensorData.mode = payload as 'AUTO' | 'MANUAL';
+        break;
+      case `${BASE_TOPIC}/motion`:
+        shared.sensorData.motionState = payload as 'DETECTED' | 'NONE';
+        if (payload === 'DETECTED') {
+          toast.info('Motion detected!', { duration: 3000 });
+        }
+        break;
+      case `${BASE_TOPIC}/alert`:
+        shared.alerts = [{ message: payload, timestamp: new Date() }, ...shared.alerts.slice(0, 4)];
+        toast.error(payload, { duration: 5000 });
+        break;
+      case `${BASE_TOPIC}/ai/log`:
+        shared.aiLogs = [{ message: payload, timestamp: new Date() }, ...shared.aiLogs.slice(0, 9)];
+        break;
+      default:
+        break;
+    }
+
+    notify();
+  };
+
+  const handleDisconnect = () => {
+    shared.isConnected = false;
+    shared.connectionReason = 'broker-disconnected';
+    toast.error('Disconnected from Smart Home');
+    notify();
+  };
+
+  const handleError = (err: Error) => {
+    console.error('MQTT Error (singleton):', err);
+    shared.connectionReason = 'error';
+    toast.error('Connection error');
+    notify();
+  };
+
+  client.on('connect', handleConnect);
+  client.on('message', handleMessage);
+  client.on('disconnect', handleDisconnect);
+  client.on('error', handleError);
+
+  initializing = false;
+
+  return client;
+};
+
 export const useMQTT = () => {
-  const [client, setClient] = useState<MqttClient | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const [sensorData, setSensorData] = useState<SensorData>({
-    temperature: 0,
-    humidity: 0,
-    bulbState: 'OFF',
-    fanState: 'OFF',
-    fanSpeed: 0,
-    rgbColor: '#FFFFFF',
-    mode: 'MANUAL',
-    motionState: 'NONE',
-  });
-  const [alerts, setAlerts] = useState<AlertData[]>([]);
-  const [aiLogs, setAILogs] = useState<AILog[]>([]);
-  const [temperatureHistory, setTemperatureHistory] = useState<{ time: string; value: number }[]>([]);
-  const [humidityHistory, setHumidityHistory] = useState<{ time: string; value: number }[]>([]);
+  const [state, setState] = useState<SharedState>(() => ({ ...shared }));
 
   useEffect(() => {
-    const mqttClient = mqtt.connect(BROKER_URL);
+      // Ensure singleton client exists once any component uses the hook
+    clearScheduledDisconnect();
+    ensureClient();
 
-    mqttClient.on('connect', () => {
-      console.log('Connected to MQTT broker');
-      setIsConnected(true);
-      toast.success('Connected to Smart Home');
+    const subscriber = (s: SharedState) => setState({ ...s });
+    subscribers.add(subscriber);
 
-      // Subscribe to all topics
-      mqttClient.subscribe([
-        `${BASE_TOPIC}/temp`,
-        `${BASE_TOPIC}/hum`,
-        `${BASE_TOPIC}/bulb`,
-        `${BASE_TOPIC}/fan`,
-        `${BASE_TOPIC}/fan/speed`,
-        `${BASE_TOPIC}/color`,
-        `${BASE_TOPIC}/mode`,
-        `${BASE_TOPIC}/motion`,
-        `${BASE_TOPIC}/alert`,
-        `${BASE_TOPIC}/ai/log`,
-      ]);
-    });
-
-    mqttClient.on('message', (topic, message) => {
-      const payload = message.toString();
-      const now = new Date().toLocaleTimeString();
-
-      switch (topic) {
-        case `${BASE_TOPIC}/temp`:
-          const temp = parseFloat(payload);
-          setSensorData((prev) => ({ ...prev, temperature: temp }));
-          setTemperatureHistory((prev) => [...prev.slice(-19), { time: now, value: temp }]);
-          break;
-        case `${BASE_TOPIC}/hum`:
-          const hum = parseFloat(payload);
-          setSensorData((prev) => ({ ...prev, humidity: hum }));
-          setHumidityHistory((prev) => [...prev.slice(-19), { time: now, value: hum }]);
-          break;
-        case `${BASE_TOPIC}/bulb`:
-          setSensorData((prev) => ({ ...prev, bulbState: payload as 'ON' | 'OFF' }));
-          break;
-        case `${BASE_TOPIC}/fan`:
-          setSensorData((prev) => ({ ...prev, fanState: payload as 'ON' | 'OFF' }));
-          break;
-        case `${BASE_TOPIC}/fan/speed`:
-          setSensorData((prev) => ({ ...prev, fanSpeed: parseInt(payload) }));
-          break;
-        case `${BASE_TOPIC}/color`:
-          setSensorData((prev) => ({ ...prev, rgbColor: payload }));
-          break;
-        case `${BASE_TOPIC}/mode`:
-          setSensorData((prev) => ({ ...prev, mode: payload as 'AUTO' | 'MANUAL' }));
-          break;
-        case `${BASE_TOPIC}/motion`:
-          setSensorData((prev) => ({ ...prev, motionState: payload as 'DETECTED' | 'NONE' }));
-          if (payload === 'DETECTED') {
-            toast.info('Motion detected!', { duration: 3000 });
-          }
-          break;
-        case `${BASE_TOPIC}/alert`:
-          const alert = { message: payload, timestamp: new Date() };
-          setAlerts((prev) => [alert, ...prev.slice(0, 4)]);
-          toast.error(payload, { duration: 5000 });
-          break;
-        case `${BASE_TOPIC}/ai/log`:
-          const aiLog = { message: payload, timestamp: new Date() };
-          setAILogs((prev) => [aiLog, ...prev.slice(0, 9)]);
-          break;
-      }
-    });
-
-    mqttClient.on('error', (error) => {
-      console.error('MQTT Error:', error);
-      toast.error('Connection error');
-    });
-
-    mqttClient.on('disconnect', () => {
-      setIsConnected(false);
-      toast.error('Disconnected from Smart Home');
-    });
-
-    setClient(mqttClient);
+    // Immediately sync local state with shared
+    setState({ ...shared });
 
     return () => {
-      mqttClient.end();
+      subscribers.delete(subscriber);
+      // If no more subscribers, schedule disconnect after 1 minute
+      if (subscribers.size === 0) {
+        scheduleDisconnect(60000);
+      }
+      // Do NOT destroy shared client immediately here - allow idle timeout
     };
   }, []);
 
-  const publish = useCallback(
-    (topic: string, message: string) => {
-      if (client && isConnected) {
-        client.publish(`${BASE_TOPIC}/${topic}`, message);
-      }
-    },
-    [client, isConnected]
-  );
+  const publish = useCallback((topic: string, message: string) => {
+    const client = shared.client;
+    if (client && client.connected && !(client as any).disconnecting) {
+      client.publish(`${BASE_TOPIC}/${topic}`, message, (err) => {
+        if (err) {
+          console.error('Publish error:', err);
+          toast.error('Failed to send command');
+        }
+      });
+    } else {
+      console.warn('Publish skipped, MQTT client not connected');
+    }
+  }, []);
 
-  const controlBulb = useCallback(
-    (state: 'ON' | 'OFF') => {
-      publish('control/bulb', state);
-    },
-    [publish]
-  );
+  const controlBulb = useCallback((state: 'ON' | 'OFF') => {
+    publish('control/bulb', state);
+  }, [publish]);
 
-  const controlFan = useCallback(
-    (state: 'ON' | 'OFF') => {
-      publish('control/fan', state);
-    },
-    [publish]
-  );
+  const controlFan = useCallback((state: 'ON' | 'OFF') => {
+    publish('control/fan', state);
+  }, [publish]);
 
-  const setFanSpeed = useCallback(
-    (speed: number) => {
-      publish('control/fan/speed', speed.toString());
-    },
-    [publish]
-  );
+  const setFanSpeed = useCallback((speed: number) => {
+    publish('control/fan/speed', speed.toString());
+  }, [publish]);
 
-  const setRGBColor = useCallback(
-    (color: string) => {
-      publish('control/color', color);
-    },
-    [publish]
-  );
+  const setRGBColor = useCallback((color: string) => {
+    publish('control/color', color);
+  }, [publish]);
 
   const toggleMode = useCallback(() => {
     publish('control/mode', 'TOGGLE');
   }, [publish]);
 
   return {
-    isConnected,
-    sensorData,
-    alerts,
-    aiLogs,
-    temperatureHistory,
-    humidityHistory,
+    isConnected: state.isConnected,
+    connectionReason: state.connectionReason ?? null,
+    sensorData: state.sensorData,
+    alerts: state.alerts,
+    aiLogs: state.aiLogs,
+    temperatureHistory: state.temperatureHistory,
+    humidityHistory: state.humidityHistory,
     controlBulb,
     controlFan,
     setFanSpeed,
