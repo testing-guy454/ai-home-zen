@@ -107,30 +107,6 @@ const Index = () => {
     }
   }, [sensorData.mode, sensorData.temperature, sensorData.humidity, setFanSpeed]);
 
-  // Adaptive RGB lighting based on time of day
-  useEffect(() => {
-    const updateRGBByTime = () => {
-      const hour = new Date().getHours();
-      let color = '#FFFFFF';
-
-      if (hour >= 6 && hour < 18) {
-        color = '#FFFFFF'; // Day: Cool white
-      } else if (hour >= 18 && hour < 22) {
-        color = '#FFD580'; // Evening: Warm yellow
-      } else {
-        color = '#0011FF'; // Night: Dim blue
-      }
-
-      if (sensorData.rgbColor !== color) {
-        setRGBColor(color);
-      }
-    };
-
-    updateRGBByTime();
-    const interval = setInterval(updateRGBByTime, 60000); // Check every minute
-
-    return () => clearInterval(interval);
-  }, [sensorData.rgbColor, setRGBColor]);
 
   return (
     <div className="px-4 md:px-8 py-0">
